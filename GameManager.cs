@@ -4,71 +4,107 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.SocialPlatforms.Impl;
+using UnityEngine.Advertisements;
 
 public class GameManager : MonoBehaviour
 {
-	public int score = 0;
-	public TextMeshProUGUI ScoreText;
-	public TextMeshProUGUI ScoreText2;
-	public TextMeshProUGUI ScoreText3;
-	public TextMeshProUGUI ScoreText4;
+	public SafeInt score;
+	public TextMeshProUGUI ScoreInPlayText;
+	public TextMeshProUGUI ScoreOverText;
+	public TextMeshProUGUI NewRecordText;
+	public TextMeshProUGUI BestScoreText;
 	public bool gameOver;
-	public GameObject gameOverPanel;
-	public int bestScore;
+	public GameObject GameOverPanel;
+	public GameObject PausePanel;
+	public GameObject OptionsPanel;
+	public GameObject MenuPanel;
+	public GameObject LineControl;
+	public SafeInt bestScore;
 
 	void Start() {
+		if (Advertisement.isSupported)
+        {
+			Advertisement.Initialize("3663803", true);
+        }
+		score = 0;
 		LoadPlayer();
-		ScoreText.text = "Score: " + score;
-	}
-
-
-	void Update() {
-
+		MenuPanel.SetActive(true);
+		gameOver = true;
 	}
 
 	public void UpdateScore(int points) {
 		score += points;
-		ScoreText.text = "Score: " + score;
+		ScoreInPlayText.text = "Score: " + score;
 	}
 
 	public void GameOver() {
 		gameOver = true;
-		gameOverPanel.SetActive(true);
-		ScoreText.text = " ";
-		ScoreText2.text = "Score: " + score;
-		ScoreText4.text = "Best Score: " + bestScore;
+		GameOverPanel.SetActive(true);
+		LineControl.SetActive(false);
+		ScoreInPlayText.text = " ";
+		ScoreOverText.text = "Score: " + score;
+		BestScoreText.text = "Best Score: " + bestScore;
 		if (score > bestScore)
-			ScoreText3.text = "NEW RECORD";
+			NewRecordText.text = "NEW RECORD";
 		else
-			ScoreText3.text = " ";
+			NewRecordText.text = " ";
 		SavePlayer();
 	}
 
 	public void PlayAgain() {
-		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
+		score = 0;
+		gameOver = false;
+		GameOverPanel.SetActive(false);
+		LineControl.SetActive(true);
+		ScoreInPlayText.text = "Score: " + score;
 	}
 
-	public void Menu()
+	public void Continue()
 	{
-		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
+		if (Advertisement.IsReady())
+        {
+			Advertisement.Show("video");
+			Debug.Log("ADV");
+		}
+		Debug.Log("Cont");
+		GameOverPanel.SetActive(false);
+		LineControl.SetActive(true);
+		gameOver = false;
+		ScoreInPlayText.text = "Score: " + score;
 	}
 
 	public void MainMenu () {
+		LineControl.SetActive(false);
+		OptionsPanel.SetActive(false);
+		GameOverPanel.SetActive(false);
+		MenuPanel.SetActive(true);
+	}
 
-    }
+	public void Options()
+	{
+		MenuPanel.SetActive(false);
+		OptionsPanel.SetActive(true);
+	}
+
+	public void Play()
+	{
+		score = 0;
+		MenuPanel.SetActive(false);
+		LineControl.SetActive(true);
+		gameOver = false;
+		ScoreInPlayText.text = "Score: " + score;
+	}
+
 
 	private void SavePlayer ()
     {
 		if (score > bestScore)
-			bestScore = score;
-		SaveSystem.SaveScore(this);
-    }
+			PlayerPrefsSafe.SetInt("Best", score);
+	}
 
 	private void LoadPlayer ()
     {
-		PlayerData data = SaveSystem.LoadScore();
-		if (data != null)
-			bestScore = data.bestScore;
+		bestScore = PlayerPrefsSafe.GetInt("Best", bestScore);
 	}
 }

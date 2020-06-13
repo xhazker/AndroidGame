@@ -6,10 +6,11 @@ public class BallScript : MonoBehaviour
 {
 
     public Rigidbody2D rb;
-    public bool inPlay;
     public float moveSpeed;
     public Transform explosion;
     public GameManager gm;
+    public AudioSource jumpSound;
+    public AudioSource ExplosionSound;
 
 
     void Start() {
@@ -20,20 +21,20 @@ public class BallScript : MonoBehaviour
 
     void Update() {
         if (gm.gameOver) {
-            return;
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0f;
+            this.transform.position = new Vector3(0, 0, 0);
+        } else {
+            Debug.Log("START");
+            rb.gravityScale = 1.2f;
         }
-
-        if (Input.GetButtonDown("Jump") && !inPlay) {
-            inPlay = true;
-            rb.AddForce(Vector2.up * moveSpeed);
-        }
+        
     }
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Bottom")) {
             Debug.Log("Ball hit the bottom of the screen!");
             gm.GameOver();
-            inPlay = false;
         }
     }
 
@@ -43,10 +44,12 @@ public class BallScript : MonoBehaviour
             Destroy(newExplosion.gameObject, 1f);
             gm.UpdateScore(1);
             Destroy(other.gameObject);
+            ExplosionSound.Play();
         }
         if (other.gameObject.CompareTag("Line")) {
-
             Destroy(other.gameObject);
+            jumpSound.Play();
         }
+        
     }
 }

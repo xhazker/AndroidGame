@@ -16,7 +16,7 @@ public class CameraConstantWidth : MonoBehaviour
     private float leftScreenEdge = 0;
     private float rightScreenEdge = 0;
     private float topScreenEdge = 15;
-    private float bottomScreenEdge = -15;
+    private float bottomScreenEdge = -10;
 
     private void Start()
     {
